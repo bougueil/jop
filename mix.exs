@@ -9,6 +9,7 @@ defmodule Jop.Mixfile do
       elixir: ">= 1.14.1",
       package: package(),
       start_permanent: Mix.env() == :prod,
+      description: "an in-memory loggger for spatial / temporal search",
       deps: deps(),
       docs: [
         main: "Superls",
