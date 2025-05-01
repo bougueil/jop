@@ -1,5 +1,5 @@
 # JOP: an in-memory key value logger
-[![CI](https://github.com/bougueil/jop_ex/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/jop_ex/actions/workflows/ci.yml)
+[![CI](https://github.com/bougueil/jop/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/jop/actions/workflows/ci.yml)
 
 <!-- MDOC !-->
 Logs in memory, spatially and temporally, key value events.
