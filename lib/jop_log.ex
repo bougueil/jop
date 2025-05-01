@@ -4,25 +4,17 @@ defmodule Jop do
   require JLValid
   @tag_start "jop_start"
 
-  @moduledoc """
-  Documentation for Jop an in memory log
-
-  ## Example
-
-  iex> "mylog"
-  ...> |> Jop.init()
-  ...> |> Jop.log("device_1", data: 112)
-  ...> |> Jop.log("device_2", data: 113)
-  ...> |> Jop.flush()
-
-  """
+  @moduledoc "README.md"
+             |> File.read!()
+             |> String.split("<!-- MDOC !-->")
+             |> Enum.fetch!(1)
 
   defstruct [:ets]
   @type t :: %__MODULE__{ets: atom()}
 
   @doc """
-    Initialize Jop with a log name.
-  returns a handle %Joplog{}
+  Initialize Jop with a `log name`.
+  returns a handle `%Joplog{}`
   """
   @spec init(log_name :: binary()) :: Jop.t()
   def init(log_name) when is_binary(log_name) do
@@ -35,15 +27,14 @@ defmodule Jop do
 
     _ = :ets.new(tab, [:bag, :named_table, :public])
 
-    joplog = Jop.ref(log_name)
+    jop = Jop.ref(log_name)
 
-    IO.puts("Jop now logging on memory joplog #{joplog.ets}.")
-    log(joplog, @tag_start, "#{JLCommon.date_str()}")
+    IO.puts("Jop now logging on memory jop #{jop.ets}.")
+    log(jop, @tag_start, "#{JLCommon.date_str()}")
   end
 
   @doc """
-  returns a handle from a log name
-  does not require JOP doesn't require init/1
+  returns a handle from a `log_name`
   """
   @spec ref(log_name :: String.t()) :: Jop.t()
   def ref(log_name) when is_binary(log_name) do
@@ -53,10 +44,10 @@ defmodule Jop do
   end
 
   @doc """
-  log with the handle jop a key and its value
+  log a `key` and its `value` with a `jop` handle 
   returns the handle.
   """
-  @spec log(Jop.t(), any, any) :: Jop.t()
+  @spec log(jop :: Jop.t(), key :: any, value :: any) :: Jop.t()
   def log(%Jop{ets: tab} = jop, key, value) do
     JLValid.ets?(tab, do: :ets.insert(tab, {key, value, now_μs()}))
     jop
@@ -67,8 +58,8 @@ defmodule Jop do
   2 logs are generated : dates.gz and keys.gz
   unless option :notstop is used, logging is stopped.
   """
-  @spec flush(Jop.t(), opt :: atom) :: Jop.t()
-  def flush(%Jop{ets: tab} = joplog, opt \\ nil) do
+  @spec flush(jop :: Jop.t(), opt :: atom) :: Jop.t()
+  def flush(%Jop{ets: tab} = jop, opt \\ nil) do
     _ =
       JLValid.ets? tab do
         {logs, t0} =
@@ -83,22 +74,22 @@ defmodule Jop do
         _ =
           if opt == :nostop do
             IO.puts(
-              "Jop continue logging.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
+              "Jop continue logging.\nflushing memory jop #{tab} (#{Enum.count(jop)} records) on files ..."
             )
 
-            clear(joplog)
+            clear(jop)
           else
             IO.puts(
-              "Jop logging stopped.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
+              "Jop logging stopped.\nflushing memory jop #{tab} (#{Enum.count(jop)} records) on files ..."
             )
 
-            reset(joplog)
+            reset(jop)
           end
 
         JL.Writer.flush(tab, t0, logs)
       end
 
-    joplog
+    jop
   end
 
   defp reset(%Jop{ets: tab}),
@@ -115,9 +106,9 @@ defmodule Jop do
   end
 
   @doc """
-  erase all entries from the jop handle
+  erase all entries from the `jop` handle
   """
-  @spec clear(Jop.t()) :: Jop.t()
+  @spec clear(jop :: Jop.t()) :: Jop.t()
   def clear(%Jop{ets: tab} = jop) do
     JLValid.ets? tab do
       t0 = lookup_tag_start(tab)
@@ -134,7 +125,7 @@ defmodule Jop do
   defp now_μs, do: System.monotonic_time(:microsecond)
 
   @doc """
-  returns if the handle  is initialized with an ets table
+  returns true if the handle  is initialized with an ets table
   """
   def initialized?(%Jop{ets: tab}),
     do: JLValid.ets?(tab, do: true, else: false)
