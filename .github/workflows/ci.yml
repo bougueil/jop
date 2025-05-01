@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       MIX_ENV: test
     strategy:
@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: 1.15.0
-              otp: 26.0.1
+              elixir: "1.18.1"
+              otp: "27.2"
             lint: lint
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: erlef/setup-beam@v1
         with:
