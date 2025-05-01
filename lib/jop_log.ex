@@ -69,32 +69,34 @@ defmodule Jop do
   """
   @spec flush(Jop.t(), opt :: atom) :: Jop.t()
   def flush(%Jop{ets: tab} = joplog, opt \\ nil) do
-    JLValid.ets? tab do
-      {logs, t0} =
-        case lookup_tag_start(tab) do
-          nil ->
-            {[], 0}
+    _ =
+      JLValid.ets? tab do
+        {logs, t0} =
+          case lookup_tag_start(tab) do
+            nil ->
+              {[], 0}
 
-          t0 ->
-            {:ets.tab2list(tab), t0}
-        end
+            t0 ->
+              {:ets.tab2list(tab), t0}
+          end
 
-      if opt == :nostop do
-        IO.puts(
-          "Jop continue logging.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
-        )
+        _ =
+          if opt == :nostop do
+            IO.puts(
+              "Jop continue logging.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
+            )
 
-        clear(joplog)
-      else
-        IO.puts(
-          "Jop logging stopped.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
-        )
+            clear(joplog)
+          else
+            IO.puts(
+              "Jop logging stopped.\nflushing memory joplog #{tab} (#{Enum.count(joplog)} records) on files ..."
+            )
 
-        reset(joplog)
+            reset(joplog)
+          end
+
+        JL.Writer.flush(tab, t0, logs)
       end
-
-      JL.Writer.flush(tab, t0, logs)
-    end
 
     joplog
   end
@@ -134,7 +136,7 @@ defmodule Jop do
   @doc """
   returns if the handle  is initialized with an ets table
   """
-  def is_initialized(%Jop{ets: tab}),
+  def initialized?(%Jop{ets: tab}),
     do: JLValid.ets?(tab, do: true, else: false)
 
   defimpl Enumerable do

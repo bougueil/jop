@@ -10,7 +10,7 @@ defmodule JopTest do
 
   test "ref from uninitialized" do
     jop = Jop.ref(@jop_log)
-    refute Jop.is_initialized(jop)
+    refute Jop.initialized?(jop)
   end
 
   test "ref from initialized" do
@@ -41,7 +41,7 @@ defmodule JopTest do
     joplog = Jop.init(@jop_log)
     Jop.log(joplog, "key_1", :any_term_112)
     Jop.flush(joplog)
-    refute Jop.is_initialized(joplog)
+    refute Jop.initialized?(joplog)
     assert all_logs_are_present?(@jop_log)
   end
 
@@ -76,10 +76,9 @@ defmodule JopTest do
     assert all_logs_are_present?(@jop_log)
   end
 
-  test "is_initialized" do
-    job_ref = Jop.ref(@jop_log)
+  test "initialized?" do
     joplog = Jop.init(@jop_log)
-    assert Jop.is_initialized(joplog)
+    assert Jop.initialized?(joplog)
     assert joplog == Jop.flush(joplog)
     assert all_logs_are_present?(@jop_log)
   end
