@@ -1,7 +1,7 @@
 defmodule Jop.Mixfile do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
   def project do
     [
       app: :jop,
@@ -26,7 +26,7 @@ defmodule Jop.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.37", only: [:docs, :test], runtime: false},
+      {:ex_doc, "~> 0.38", only: [:docs, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]

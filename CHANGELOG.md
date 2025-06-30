@@ -1,6 +1,11 @@
 # Changelog for Jop
 
 
+## v0.1.2 (2025-06-30)
+
+  * add a test with concurrency 
+  * tune ets table
+
 ## v0.1.1 (2025-05-01)
 
   * minor updates

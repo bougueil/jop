@@ -1,4 +1,4 @@
-# JOP: an in-memory key value logger
+# JOP (Journal of Operations)
 [![CI](https://github.com/bougueil/jop/actions/workflows/ci.yml/badge.svg)](https://github.com/bougueil/jop/actions/workflows/ci.yml)
 
 <!-- MDOC !-->
@@ -114,5 +114,7 @@ end
 ## Performance
 Excerpt from a run of the unit test :
 ```
-througput 1267456 logs/s.
+throughput 840812 logs/s. (1 process)
+throughput 3851427 logs/s. (concurrency: 8 cores)
+
 ```

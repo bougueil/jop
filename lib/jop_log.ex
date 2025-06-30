@@ -25,7 +25,7 @@ defmodule Jop do
       |> reset()
     end
 
-    _ = :ets.new(tab, [:bag, :named_table, :public])
+    _ = :ets.new(tab, [:bag, :named_table, :public, write_concurrency: true])
 
     jop = Jop.ref(log_name)
 
