@@ -20,18 +20,17 @@ defmodule JL.Writer do
     names = for f <- ~w(dates keys), do: fname(tab, "#{f}.gz")
     [fa, fb] = for name <- names, do: File.open!(name, [:write, :compressed, encoding: :unicode])
 
-    # factorize
-    # flush log to the 'temporal' log file
     awaits = [
+      # flush log to the 'temporal' log file
       {Task.async(fn ->
          for {k, op, t} <- List.keysort(logs, 2) do
-           IO.puts(fa, "#{fmt_duration_us(t - t0)} #{inspect(k)}: #{inspect(op)}")
+           IO.puts(fa, [fmt_duration_us(t - t0), " ", inspect(k), ": ", inspect(op)])
          end
        end), fa},
-      # flush log to 'spatial' log file
+      # flush log to the 'spatial' log file
       {Task.async(fn ->
          for {k, op, t} <- List.keysort(logs, 0) do
-           IO.puts(fb, "#{inspect(k)}: #{fmt_duration_us(t - t0)} #{inspect(op)}")
+           IO.puts(fb, [inspect(k), ": ", fmt_duration_us(t - t0), " ", inspect(op)])
          end
        end), fb}
     ]
@@ -43,7 +42,7 @@ defmodule JL.Writer do
             _ = File.close(fd)
           )
 
-    IO.puts("log stored in :")
+    IO.puts("Logs are stored in :")
     for name <- names, do: IO.puts("- #{name}")
   end
 end
