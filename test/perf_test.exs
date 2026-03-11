@@ -1,5 +1,6 @@
 defmodule PerfTest do
   use ExUnit.Case
+
   @jop_log "test_jop_log"
   @iterations 2_000_000
 
@@ -20,9 +21,10 @@ defmodule PerfTest do
       end
       |> :timer.tc()
 
+    assert Enum.count(joplog) == ctx.number_logs
+
     throughput = div(ctx.number_logs * 1_000_000, tlog)
     IO.puts("throughput #{throughput} logs/s. (1 process)")
-    assert Enum.count(joplog) == ctx.number_logs
   end
 
   test "measure concurrent logging", ctx do
@@ -44,8 +46,9 @@ defmodule PerfTest do
       end
       |> :timer.tc()
 
+    assert Enum.count(joplog) == ctx.number_logs
+
     throughput = div(ctx.number_logs * 1_000_000, tlog)
     IO.puts("throughput #{throughput} logs/s. (concurrency: #{ctx.ncores} cores)")
-    assert Enum.count(joplog) == ctx.number_logs
   end
 end
