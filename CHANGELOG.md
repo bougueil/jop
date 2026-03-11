@@ -3,6 +3,7 @@
 ## v0.1.3 (2026-03-11)
 
   * improve code & doc
+  * flush optimization
 
 ## v0.1.2 (2025-06-30)
 
