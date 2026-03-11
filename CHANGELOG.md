@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.1.4 (2026-03-11)
+  * small code improvement after RAG llm review
+
 ## v0.1.3 (2026-03-11)
 
   * improve code & doc
