@@ -1,21 +1,19 @@
 defmodule Jop.Mixfile do
   use Mix.Project
 
-  @version "0.1.2"
+  @source_url "https://github.com/bougueil/jop"
+  @version "0.1.3"
   def project do
     [
       app: :jop,
       version: @version,
       elixir: "~> 1.15-dev",
       package: package(),
+      aliases: aliases(),
       start_permanent: Mix.env() == :prod,
-      description: "an in-memory loggger for spatial / temporal search",
+      description: "an in-memory logger for spatial / temporal search",
       deps: deps(),
-      docs: [
-        main: "Jop",
-        source_ref: "v#{@version}",
-        source_url: "https://github.com/bougueil/jop"
-      ]
+      docs: docs()
     ]
   end
 
@@ -23,10 +21,9 @@ defmodule Jop.Mixfile do
     [extra_applications: [:logger]]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.38", only: [:docs, :test], runtime: false},
+      {:ex_doc, "~> 0.40", only: [:docs, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
@@ -35,8 +32,34 @@ defmodule Jop.Mixfile do
   defp package do
     %{
       licenses: ["Apache-2.0"],
-      maintainers: ["Renaud Mariana"],
-      links: %{"GitHub" => "https://github.com/bougueil/jop"}
+      maintainers: ["bougueil"],
+      links: %{
+        GitHub: @source_url
+      }
     }
+  end
+
+  defp docs do
+    [
+      main: "Jop",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      extras: [
+        {"README.md", title: "README"},
+        "CHANGELOG.md"
+      ]
+    ]
+  end
+
+  defp aliases do
+    [
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "credo",
+        "dialyzer --unmatched_returns"
+      ]
+    ]
   end
 end
