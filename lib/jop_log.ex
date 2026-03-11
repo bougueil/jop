@@ -2,49 +2,50 @@
 
 defmodule Jop do
   require JLValid
-  @tag_start "jop_start"
+  @tag_start_date "jop_start_date"
 
   @moduledoc "README.md"
              |> File.read!()
              |> String.split("<!-- MDOC !-->")
-             |> Enum.fetch!(1)
+             |> Enum.at(1)
 
   defstruct [:ets]
   @type t :: %__MODULE__{ets: atom()}
 
   @doc """
-  Initialize Jop with a `log name`.
-  returns a handle `%Joplog{}`
+  Initialize a Jop instance with a `name`
+  The initialization clears out all entries found and inserts a start time log
+  returns a handle `%Jop{}`.
   """
   @spec init(log_name :: binary()) :: Jop.t()
-  def init(log_name) when is_binary(log_name) do
-    tab = String.to_atom(log_name)
+  def init(name) when is_binary(name) do
+    tab = String.to_atom(name)
 
     JLValid.ets? tab do
-      Jop.ref(log_name)
+      Jop.ref(name)
       |> reset()
     end
 
     _ = :ets.new(tab, [:bag, :named_table, :public, write_concurrency: true])
 
-    jop = Jop.ref(log_name)
+    jop = Jop.ref(name)
 
     IO.puts("Jop now logging on memory jop #{jop.ets}.")
-    log(jop, @tag_start, "#{JLCommon.date_str()}")
+    log(jop, @tag_start_date, "#{JLCommon.date_str()}")
   end
 
   @doc """
-  returns a handle from a `log_name`
+  returns the handle from the Jop instance name.
   """
-  @spec ref(log_name :: String.t()) :: Jop.t()
-  def ref(log_name) when is_binary(log_name) do
-    tab = String.to_atom(log_name)
+  @spec ref(name :: String.t()) :: Jop.t()
+  def ref(name) when is_binary(name) do
+    tab = String.to_atom(name)
 
     %Jop{ets: tab}
   end
 
   @doc """
-  log a `key` and its `value` with a `jop` handle 
+  Log a `key` and its `value` with a `jop` instance handle.
   returns the handle.
   """
   @spec log(jop :: Jop.t(), key :: any, value :: any) :: Jop.t()
@@ -54,16 +55,16 @@ defmodule Jop do
   end
 
   @doc """
-  write a joplog on disk from a handle.
-  2 logs are generated : dates.gz and keys.gz
-  unless option :notstop is used, logging is stopped.
+  Write on disk a `jop` instance logs.
+  2 log files are generated : dates.gz and keys.gz
+  unless option `:notstop` is given, the logging is stopped.
   """
   @spec flush(jop :: Jop.t(), opt :: atom) :: Jop.t()
   def flush(%Jop{ets: tab} = jop, opt \\ nil) do
     _ =
       JLValid.ets? tab do
         {logs, t0} =
-          case lookup_tag_start(tab) do
+          case start_time(jop) do
             nil ->
               {[], 0}
 
@@ -92,11 +93,12 @@ defmodule Jop do
     jop
   end
 
-  defp reset(%Jop{ets: tab}),
-    do: JLValid.ets?(tab, do: :ets.delete(tab))
-
-  defp lookup_tag_start(tab) do
-    case :ets.lookup(tab, @tag_start) do
+  @doc """
+  Returns the start time of a `jop` instance or `nil` if not started.
+  """
+  @spec start_time(jop :: Jop.t()) :: nil | integer()
+  def start_time(%Jop{ets: tab}) do
+    case :ets.lookup(tab, @tag_start_date) do
       [{_, _, t0}] ->
         t0
 
@@ -105,17 +107,20 @@ defmodule Jop do
     end
   end
 
+  defp reset(%Jop{ets: tab}),
+    do: JLValid.ets?(tab, do: :ets.delete(tab))
+
   @doc """
-  erase all entries from the `jop` handle
+  Erase all log entries of a `jop` instance.
   """
   @spec clear(jop :: Jop.t()) :: Jop.t()
   def clear(%Jop{ets: tab} = jop) do
     JLValid.ets? tab do
-      t0 = lookup_tag_start(tab)
+      t0 = start_time(jop)
       :ets.delete_all_objects(tab)
 
       if t0 do
-        :ets.insert(tab, {@tag_start, t0, now_μs()})
+        :ets.insert(tab, {@tag_start_date, t0, now_μs()})
       end
     end
 
@@ -125,23 +130,26 @@ defmodule Jop do
   defp now_μs, do: System.monotonic_time(:microsecond)
 
   @doc """
-  returns true if the handle  is initialized with an ets table
+  Returns true if the `jop` instance is initialized
+
+  See init/1.
   """
   def initialized?(%Jop{ets: tab}),
     do: JLValid.ets?(tab, do: true, else: false)
 
   defimpl Enumerable do
     @doc """
-    returns the size of the Jop log
+    Returns the `jop` logs size.
     """
+    @spec count(jop :: Jop.t()) :: {:ok, integer()}
     def count(%Jop{ets: tab}) do
       {:ok, max(0, :ets.info(tab, :size) - 1)}
     end
 
     @doc """
-    returns if `key`is member of Jop
+    Returns if one or more elements in the `jop` logs has key `key`.
     """
-    @spec member?(Jop.t(), any) :: {:ok, boolean}
+    @spec member?(jop :: Jop.t(), key :: any) :: {:ok, boolean}
     def member?(%Jop{ets: tab}, key) do
       {:ok, :ets.member(tab, key)}
     end
