@@ -1,7 +1,8 @@
 # See LICENSE for licensing information.
 
 defmodule Jop do
-  require JLValid
+  import JLValid, only: [safe_ets: 2]
+
   @tag_start_date "jop_start_date"
 
   @moduledoc "README.md"
@@ -21,7 +22,7 @@ defmodule Jop do
   def init(name) when is_binary(name) do
     tab = String.to_atom(name)
 
-    JLValid.ets? tab do
+    safe_ets tab do
       Jop.ref(name)
       |> reset()
     end
@@ -50,7 +51,7 @@ defmodule Jop do
   """
   @spec log(jop :: Jop.t(), key :: any, value :: any) :: Jop.t()
   def log(%Jop{ets: tab} = jop, key, value) do
-    JLValid.ets?(tab, do: :ets.insert(tab, {key, value, now_μs()}))
+    safe_ets(tab, do: :ets.insert(tab, {key, value, now_μs()}))
     jop
   end
 
@@ -62,7 +63,7 @@ defmodule Jop do
   @spec flush(jop :: Jop.t(), opt :: atom) :: Jop.t()
   def flush(%Jop{ets: tab} = jop, opt \\ nil) do
     _ =
-      JLValid.ets? tab do
+      safe_ets tab do
         {logs, t0} =
           case start_time(jop) do
             nil ->
@@ -108,14 +109,14 @@ defmodule Jop do
   end
 
   defp reset(%Jop{ets: tab}),
-    do: JLValid.ets?(tab, do: :ets.delete(tab))
+    do: safe_ets(tab, do: :ets.delete(tab))
 
   @doc """
   Erase all log entries of a `jop` instance.
   """
   @spec clear(jop :: Jop.t()) :: Jop.t()
   def clear(%Jop{ets: tab} = jop) do
-    JLValid.ets? tab do
+    safe_ets tab do
       t0 = start_time(jop)
       :ets.delete_all_objects(tab)
 
@@ -135,7 +136,7 @@ defmodule Jop do
   See init/1.
   """
   def initialized?(%Jop{ets: tab}),
-    do: JLValid.ets?(tab, do: true, else: false)
+    do: safe_ets(tab, do: true, else: false)
 
   defimpl Enumerable do
     @doc """
@@ -171,7 +172,7 @@ defmodule Jop do
     import Inspect.Algebra
 
     def inspect(%Jop{ets: tab} = jop, opts) do
-      JLValid.ets? tab do
+      safe_ets tab do
         concat(["#Jop<#{tab}:size(", to_doc(Enum.count(jop), opts), ")>"])
       else
         concat(["#Jop<#{tab}:uninitialized>"])

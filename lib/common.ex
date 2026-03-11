@@ -3,7 +3,7 @@
 defmodule JLValid do
   @moduledoc false
 
-  defmacro ets?(tab, clauses) do
+  defmacro safe_ets(tab, clauses) do
     valid_if(tab, clauses)
   end
 
